@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Osmani Medical College Hospital - Management System</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --accent: #0d9488;
+      --accent-light: #ccfbf1;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--slate-100);
+      color: var(--slate-800);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Brand & Notification Header */
+    header.top-bar {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--slate-200);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background-color: var(--success-light);
+      color: var(--success);
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* Navigation Bar */
+    nav.main-nav {
+      background-color: var(--slate-900);
+      color: #ffffff;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      box-shadow: var(--shadow-md);
+    }
+
+    nav.main-nav a {
+      color: var(--slate-300);
+      text-decoration: none;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    nav.main-nav a:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    nav.main-nav a.active {
+      color: #ffffff;
+      border-bottom-color: var(--primary);
+      background-color: rgba(2, 132, 199, 0.15);
+      font-weight: 600;
+    }
+
+    nav.main-nav a .nav-badge {
+      background: rgba(2, 132, 199, 0.3);
+      color: #38bdf8;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    main.app-shell {
+      flex: 1;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Page Header Banner */
+    .dashboard-hero {
+      background: linear-gradient(135deg, #ffffff 0%, var(--primary-light) 100%);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .hero-title h2 {
+      font-size: 1.5rem;
+      color: var(--slate-900);
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-title p {
+      color: var(--slate-600);
+      font-size: 0.9rem;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background-color: white;
+      color: var(--slate-700);
+      border: 1px solid var(--slate-300);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--slate-50);
+      border-color: var(--slate-400);
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #15803d;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #b91c1c;
+    }
+
+    /* KPI Summary Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background-color: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .stat-card.card-blue::before { background-color: var(--primary); }
+    .stat-card.card-green::before { background-color: var(--success); }
+    .stat-card.card-amber::before { background-color: var(--warning); }
+    .stat-card.card-teal::before { background-color: var(--accent); }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .card-blue .stat-icon { background-color: var(--primary-light); color: var(--primary); }
+    .card-green .stat-icon { background-color: var(--success-light); color: var(--success); }
+    .card-amber .stat-icon { background-color: var(--warning-light); color: var(--warning); }
+    .card-teal .stat-icon { background-color: var(--accent-light); color: var(--accent); }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--slate-600);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin: 0.15rem 0;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+    }
+
+    /* Modules Section Grid */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .module-card {
+      background-color: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .module-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .module-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .module-badge-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .module-info h3 {
+      font-size: 1.05rem;
+      color: var(--slate-900);
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .module-info p {
+      font-size: 0.85rem;
+      color: var(--slate-600);
+    }
+
+    .module-action {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .module-action .link-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .module-action .link-btn:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    /* Recent Activity & Quick Table */
+    .two-col-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .panel {
+      background-color: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 1rem 1.25rem;
+      background-color: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-header h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--slate-800);
+    }
+
+    .panel-body {
+      padding: 1rem 1.25rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background-color: var(--slate-50);
+      color: var(--slate-600);
+      font-weight: 600;
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--slate-200);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+    }
+
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700);
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+
+    tr:hover td {
+      background-color: var(--slate-50);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-done {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+
+    .status-pending {
+      background-color: var(--warning-light);
+      color: var(--warning);
+    }
+
+    /* Doctor list preview */
+    .doctor-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .doctor-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .doctor-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .doc-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .doc-meta h4 {
+      font-size: 0.85rem;
+      color: var(--slate-900);
+      font-weight: 600;
+    }
+
+    .doc-meta p {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+    }
+
+    /* Toast Notification */
+    #toast {
+      visibility: hidden;
+      min-width: 280px;
+      background-color: var(--slate-900);
+      color: #fff;
+      text-align: center;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      position: fixed;
+      z-index: 100;
+      right: 24px;
+      bottom: 24px;
+      font-size: 0.875rem;
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--primary);
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.3s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+      from { bottom: 0; opacity: 0; }
+      to { bottom: 24px; opacity: 1; }
+    }
+
+    @keyframes fadeout {
+      from { bottom: 24px; opacity: 1; }
+      to { bottom: 0; opacity: 0; }
+    }
+
+    /* Footer */
+    footer.app-footer {
+      background-color: white;
+      border-top: 1px solid var(--slate-200);
+      padding: 1rem 1.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--slate-600);
+      margin-top: auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .two-col-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 0 !important;
+      }
+      .dashboard-hero {
+        padding: 1.25rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+      nav.main-nav a {
+        padding: 0.75rem 0.85rem;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top System Header -->
+  <header class="top-bar">
+    <div class="brand-group">
+      <div class="brand-logo">CV</div>
+      <div class="brand-text">
+        <h1>Osmani Medical College Hospital </h1>
+        <p>Hospital Information & Patient Management System</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-live">
+        <span class="pulse-dot"></span> System Live (Demo)
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Bar to all required screens -->
+  <nav class="main-nav">
+    <a href="index.html" class="active">
+      <span>📊</span> Dashboard
+    </a>
+    <a href="patients.html">
+      <span>👤</span> Patients
+    </a>
+    <a href="visits.html">
+      <span>🩺</span> Doctor Visits
+    </a>
+    <a href="lab.html">
+      <span>🧪</span> Lab Tests
+    </a>
+    <a href="billing.html">
+      <span>💳</span> Billing & Cashier
+    </a>
+    <a href="reports.html">
+      <span>📈</span> Reports
+    </a>
+    <a href="chat.html">
+      <span>💬</span> AI Report Assistant <span class="nav-badge">ChatterMate</span>
+    </a>
+  </nav>
+
+  <!-- Main Dashboard Content -->
+  <main class="app-shell">
+    
+    <!-- Hero Banner with Sample Data Controls -->
+    <div class="dashboard-hero">
+      <div class="hero-title">
+        <h2>Hospital Executive Dashboard</h2>
+        <p>Real-time view of daily clinical operations, consultations, laboratory throughput, and financial collections.</p>
+      </div>
+      <div class="btn-group">
+        <button id="btnLoadData" class="btn btn-primary" onclick="loadSampleData()">
+          <span>⚡</span> Load Sample Data (50+ Records)
+        </button>
+        <button id="btnClearData" class="btn btn-outline" onclick="clearAllData()">
+          <span>🗑️</span> Reset Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Metric Stats Cards -->
+    <div class="stats-grid">
+      <!-- Patients Today -->
+      <div class="stat-card card-blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Patients</div>
+          <div class="stat-value" id="kpiTotalPatients">0</div>
+          <div class="stat-sub"><span id="kpiTodayPatients">0</span> registered today</div>
+        </div>
+      </div>
+
+      <!-- Money Collected Today -->
+      <div class="stat-card card-green">
+        <div class="stat-icon">৳</div>
+        <div class="stat-content">
+          <div class="stat-label">Today's Collections</div>
+          <div class="stat-value" id="kpiTodayCollected">Tk 0</div>
+          <div class="stat-sub">Visits & Lab Fees</div>
+        </div>
+      </div>
+
+      <!-- Lab Tests Pending -->
+      <div class="stat-card card-amber">
+        <div class="stat-icon">🧪</div>
+        <div class="stat-content">
+          <div class="stat-label">Tests Pending</div>
+          <div class="stat-value" id="kpiPendingTests">0</div>
+          <div class="stat-sub"><span id="kpiDoneTests">0</span> completed</div>
+        </div>
+      </div>
+
+      <!-- Doctor Consultations -->
+      <div class="stat-card card-teal">
+        <div class="stat-icon">🩺</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Visits</div>
+          <div class="stat-value" id="kpiTotalVisits">0</div>
+          <div class="stat-sub">Across 5 Active Doctors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen Access Modules -->
+    <div class="section-title">
+      <span>Operational Modules</span>
+      <span style="font-size: 0.8rem; font-weight: 500; color: var(--slate-600);">All data stored locally in browser</span>
+    </div>
+
+    <div class="modules-grid">
+      <!-- 1. Patients -->
+      <div class="module-card">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">👤</span>
+            <div class="module-info">
+              <h3>Patient Registration</h3>
+              <p>Add new patients with auto-generated IDs, record age, gender, contact, and address with quick search.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span style="font-size: 0.75rem; color: var(--slate-600);" id="modPatientsCount">0 Registered</span>
+          <a href="patients.html" class="link-btn">Open Registration →</a>
+        </div>
+      </div>
+
+      <!-- 2. Doctor Visit -->
+      <div class="module-card">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">🩺</span>
+            <div class="module-info">
+              <h3>Doctor Visit & Prescription</h3>
+              <p>Assign registered patients to specialist doctors, record clinical problems, prescribed meds, and fees.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span style="font-size: 0.75rem; color: var(--slate-600);" id="modVisitsCount">0 Consultations</span>
+          <a href="visits.html" class="link-btn">Record Visit →</a>
+        </div>
+      </div>
+
+      <!-- 3. Lab Tests -->
+      <div class="module-card">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">🧪</span>
+            <div class="module-info">
+              <h3>Lab Investigations</h3>
+              <p>Select diagnostic tests from catalog (CBC, Lipid, ECG, X-Ray), toggle pending/done, and record findings.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span style="font-size: 0.75rem; color: var(--slate-600);" id="modLabCount">0 Orders</span>
+          <a href="lab.html" class="link-btn">Manage Tests →</a>
+        </div>
+      </div>
+
+      <!-- 4. Billing -->
+      <div class="module-card">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">💳</span>
+            <div class="module-info">
+              <h3>Billing & Cashier</h3>
+              <p>Calculate patient ledger totals, accept payments via Cash, Card, or bKash, and monitor outstanding dues.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span style="font-size: 0.75rem; color: var(--slate-600);" id="modDueCount">Total Ledger</span>
+          <a href="billing.html" class="link-btn">Open Cashier →</a>
+        </div>
+      </div>
+
+      <!-- 5. Reports -->
+      <div class="module-card">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">📈</span>
+            <div class="module-info">
+              <h3>Financial & Clinical Reports</h3>
+              <p>Daily collections, patient lists, doctor-wise performance, and lab test statistics with Date Filters and Print.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span style="font-size: 0.75rem; color: var(--slate-600);">4 Core Reports</span>
+          <a href="reports.html" class="link-btn">View Reports →</a>
+        </div>
+      </div>
+
+      <!-- 6. AI Assistant -->
+      <div class="module-card" style="border: 1px solid #7dd3fc; background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);">
+        <div>
+          <div class="module-header">
+            <span class="module-badge-icon">🤖</span>
+            <div class="module-info">
+              <h3>AI Report Chat</h3>
+              <p>Ask plain-English questions powered by ChatterMate. Live totals, zero hallucinations, strict read-only security.</p>
+            </div>
+          </div>
+        </div>
+        <div class="module-action">
+          <span class="badge-live" style="background:#e0f2fe; color:#0369a1;">Powered by ChatterMate</span>
+          <a href="chat.html" class="link-btn" style="color:#0284c7;">Ask AI →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Layout: Recent Visits & Active Doctors -->
+    <div class="two-col-layout">
+      <!-- Recent Registrations / Visits -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Recent Doctor Consultations</h3>
+          <a href="visits.html" class="btn btn-outline" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">View All</a>
+        </div>
+        <div class="panel-body">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Date</th>
+                  <th>Fee</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentVisitsBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: var(--slate-600); padding: 1.5rem;">
+                    No records found. Click <strong>"Load Sample Data"</strong> above to populate the system.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Doctors Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Medical Specialists</h3>
+          <span style="font-size: 0.75rem; color: var(--slate-600);">5 On Duty</span>
+        </div>
+        <div class="panel-body">
+          <ul class="doctor-list" id="doctorList">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast">Notification message</div>
+
+  <!-- Standard Footer -->
+  <footer class="app-footer">
+    <p>Osmani Medical College Hospital Information System &bull; Built for ChatterMate Campus Ambassador Task &bull; All data fictional</p>
+  </footer>
+
+  <!-- Core Data & Dashboard Controller Script -->
+  <script>
+    // ==========================================
+    // 1. DATA DEFINITIONS & INITIALIZATION
+    // ==========================================
+    const DEFAULT_DOCTORS = [
+      { id: "DOC-01", name: "Dr. A. Rahman", dept: "General Medicine", fee: 800 },
+      { id: "DOC-02", name: "Dr. Nusrat Sultana", dept: "Cardiology", fee: 1200 },
+      { id: "DOC-03", name: "Dr. Tanvir Hasan", dept: "Pediatrics", fee: 900 },
+      { id: "DOC-04", name: "Dr. Sabrina Faruq", dept: "Gynecology & Obstetrics", fee: 1000 },
+      { id: "DOC-05", name: "Dr. Mahmudul Karim", dept: "Orthopedics", fee: 1000 }
+    ];
+
+    const LAB_CATALOG = [
+      { name: "Complete Blood Count (CBC)", category: "Hematology", price: 500 },
+      { name: "Blood Glucose (Fasting)", category: "Biochemistry", price: 250 },
+      { name: "Lipid Profile", category: "Biochemistry", price: 1100 },
+      { name: "Serum Creatinine", category: "Biochemistry", price: 400 },
+      { name: "Chest X-Ray (P/A View)", category: "Radiology", price: 850 },
+      { name: "12-Lead ECG", category: "Cardiology", price: 600 },
+      { name: "Ultrasonography (Whole Abdomen)", category: "Radiology", price: 1600 }
+    ];
+
+    // Helper functions for localStorage
+    function getStore(key, defaultVal) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : defaultVal;
+    }
+
+    function setStore(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.className = "show";
+      setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+    }
+
+    function formatTk(num) {
+      return "Tk " + Number(num || 0).toLocaleString("en-US");
+    }
+
+    function getTodayDateString() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    }
+
+    // ==========================================
+    // 2. SAMPLE DATA GENERATOR (50+ PATIENTS, 30 DAYS)
+    // ==========================================
+    function loadSampleData() {
+      if (localStorage.getItem("osmani_patients") && getStore("osmani_patients", []).length > 0) {
+        if (!confirm("Sample data is already loaded. Do you want to reload and refresh with fresh data?")) {
+          return;
+        }
+      }
+
+      const firstNames = ["Mohammad", "Fatima", "Abdul", "Ayesha", "Kamal", "Rina", "Shafiq", "Tasnim", "Arif", "Nasreen", "Zubair", "Sumaiya", "Rakib", "Farhana", "Jashim", "Meher", "Tareq", "Khadija", "Hasan", "Sultana"];
+      const lastNames = ["Hossain", "Begum", "Ahmed", "Khanam", "Chowdhury", "Islam", "Rahman", "Akter", "Uddin", "Miah", "Sarker", "Barua", "Haque", "Talukder", "Ali"];
+      const genders = ["Male", "Female"];
+      const diagnoses = [
+        { prob: "Acute Viral Fever & Headache", meds: "Tab Paracetamol 500mg 1+1+1 5 days" },
+        { prob: "Hypertension Stage 1", meds: "Tab Amlodipine 5mg 0+0+1 30 days" },
+        { prob: "Type 2 Diabetes Routine Checkup", meds: "Tab Metformin 500mg 1+0+1 with meals" },
+        { prob: "Lower Back Strain", meds: "Tab Naproxen 250mg + Omeprazole 20mg" },
+        { prob: "Seasonal Bronchitis & Cough", meds: "Syp Bromhexine 2 tsp tds, Tab Montelukast 10mg" },
+        { prob: "Gastric Hyperacidity", meds: "Cap Esomeprazole 20mg 1+0+1 before meals" },
+        { prob: "Mild Knee Osteoarthritis", meds: "Tab Glucosamine + Calcium D" }
+      ];
+
+      const patients = [];
+      const visits = [];
+      const labTests = [];
+      const payments = [];
+
+      const today = new Date();
+      const pad = (n) => String(n).padStart(4, "0");
+
+      // Generate 52 Patients spanning the last 30 days
+      for (let i = 1; i <= 52; i++) {
+        const fName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const gender = genders[Math.floor(Math.random() * genders.length)];
+        const age = Math.floor(Math.random() * 60) + 12; // 12 to 72 years
+        const phone = "017" + Math.floor(10000000 + Math.random() * 90000000);
+        
+        // Distribute dates over past 30 days, with 6-8 registered today
+        let daysAgo = i <= 8 ? 0 : Math.floor(Math.random() * 28) + 1;
+        const regDateObj = new Date(today.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+        const regDate = regDateObj.toISOString().split("T")[0];
+
+        const patientId = "P-" + pad(i);
+        patients.push({
+          id: patientId,
+          name: `${fName} ${lName}`,
+          age: age,
+          gender: gender,
+          phone: phone,
+          address: `House #${10 + (i % 40)}, Road #${1 + (i % 12)}, Sector ${1 + (i % 14)}, Dhaka`,
+          registeredDate: regDate
+        });
+
+        // 75% of patients get a Doctor Visit
+        if (Math.random() > 0.25) {
+          const doc = DEFAULT_DOCTORS[Math.floor(Math.random() * DEFAULT_DOCTORS.length)];
+          const diag = diagnoses[Math.floor(Math.random() * diagnoses.length)];
+          const visitId = "V-" + pad(visits.length + 1);
+
+          visits.push({
+            id: visitId,
+            patientId: patientId,
+            patientName: `${fName} ${lName}`,
+            doctorId: doc.id,
+            doctorName: doc.name,
+            department: doc.dept,
+            date: regDate,
+            diagnosis: diag.prob,
+            medicines: diag.meds,
+            fee: doc.fee,
+            status: "Completed"
+          });
+
+          // Most visits are paid
+          payments.push({
+            id: "PAY-" + pad(payments.length + 1),
+            patientId: patientId,
+            patientName: `${fName} ${lName}`,
+            refId: visitId,
+            source: "Doctor Visit",
+            amount: doc.fee,
+            date: regDate,
+            method: (i % 3 === 0) ? "bKash" : (i % 2 === 0 ? "Cash" : "Card")
+          });
+        }
+
+        // 60% of patients get a Lab Test ordered
+        if (Math.random() > 0.40) {
+          const test = LAB_CATALOG[Math.floor(Math.random() * LAB_CATALOG.length)];
+          const labId = "LAB-" + pad(labTests.length + 1);
+          // If registered today or yesterday, 40% chance it's still pending
+          const isPending = daysAgo <= 1 ? (Math.random() > 0.5) : false;
+
+          labTests.push({
+            id: labId,
+            patientId: patientId,
+            patientName: `${fName} ${lName}`,
+            testName: test.name,
+            category: test.category,
+            price: test.price,
+            date: regDate,
+            status: isPending ? "Pending" : "Done",
+            result: isPending ? "" : "Normal reference range verified by duty pathologist."
+          });
+
+          // If done or billed, 85% paid
+          if (Math.random() > 0.15) {
+            payments.push({
+              id: "PAY-" + pad(payments.length + 1),
+              patientId: patientId,
+              patientName: `${fName} ${lName}`,
+              refId: labId,
+              source: "Lab Test",
+              amount: test.price,
+              date: regDate,
+              method: (i % 2 === 0) ? "bKash" : "Cash"
+            });
+          }
+        }
+      }
+
+      // Save to localStorage
+      setStore("osmani_doctors", DEFAULT_DOCTORS);
+      setStore("osmani_patients", patients);
+      setStore("osmani_visits", visits);
+      setStore("osmani_lab_tests", labTests);
+      setStore("osmani_payments", payments);
+
+      showToast("Loaded 52 patients, visits, lab orders, and payments!");
+      renderDashboard();
+    }
+
+    function clearAllData() {
+      if (!confirm("Are you sure you want to clear all patient data?")) return;
+      localStorage.removeItem("osmani_patients");
+      localStorage.removeItem("osmani_visits");
+      localStorage.removeItem("osmani_lab_tests");
+      localStorage.removeItem("osmani_payments");
+      setStore("osmani_doctors", DEFAULT_DOCTORS);
+      showToast("Data cleared. Ready for fresh records.");
+      renderDashboard();
+    }
+
+    // ==========================================
+    // 3. DASHBOARD RENDER & CALCULATIONS
+    // ==========================================
+    function renderDashboard() {
+      const doctors = getStore("osmani_doctors", DEFAULT_DOCTORS);
+      const patients = getStore("osmani_patients", []);
+      const visits = getStore("osmani_visits", []);
+      const labTests = getStore("osmani_lab_tests", []);
+      const payments = getStore("osmani_payments", []);
+      const today = getTodayDateString();
+
+      // Metrics calculation
+      const totalPatients = patients.length;
+      const todayPatients = patients.filter(p => p.registeredDate === today).length;
+
+      // Money collected today
+      const todayPayments = payments.filter(p => p.date === today);
+      const todayCollected = todayPayments.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+      // Lab test status counts
+      const pendingLab = labTests.filter(t => t.status === "Pending").length;
+      const doneLab = labTests.filter(t => t.status === "Done").length;
+
+      // Total Visits
+      const totalVisits = visits.length;
+
+      // Update KPI Elements
+      document.getElementById("kpiTotalPatients").innerText = totalPatients;
+      document.getElementById("kpiTodayPatients").innerText = todayPatients;
+      document.getElementById("kpiTodayCollected").innerText = formatTk(todayCollected);
+      document.getElementById("kpiPendingTests").innerText = pendingLab;
+      document.getElementById("kpiDoneTests").innerText = doneLab;
+      document.getElementById("kpiTotalVisits").innerText = totalVisits;
+
+      // Update module card indicators
+      document.getElementById("modPatientsCount").innerText = `${totalPatients} Registered`;
+      document.getElementById("modVisitsCount").innerText = `${totalVisits} Consultations`;
+      document.getElementById("modLabCount").innerText = `${labTests.length} Total (${pendingLab} pending)`;
+
+      // Render Doctors List in side panel
+      const docListEl = document.getElementById("doctorList");
+      docListEl.innerHTML = doctors.map(d => `
+        <li class="doctor-item">
+          <div class="doc-avatar">${d.name.split(" ")[1] ? d.name.split(" ")[1][0] : "D"}</div>
+          <div class="doc-meta">
+            <h4>${d.name}</h4>
+            <p>${d.dept} &bull; Fee: ${formatTk(d.fee)}</p>
+          </div>
+        </li>
+      `).join("");
+
+      // Render Recent 5 Visits Table
+      const recentBody = document.getElementById("recentVisitsBody");
+      if (visits.length === 0) {
+        recentBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--slate-600); padding: 1.5rem;">
+              No records found. Click <strong>"Load Sample Data"</strong> above to populate the system.
+            </td>
+          </tr>
+        `;
+      } else {
+        const sorted = [...visits].reverse().slice(0, 5);
+        recentBody.innerHTML = sorted.map(v => `
+          <tr>
+            <td><strong>${v.patientName || v.patientId}</strong><br><span style="font-size:0.75rem; color:#64748b;">${v.patientId}</span></td>
+            <td>${v.doctorName}</td>
+            <td>${v.date}</td>
+            <td>${formatTk(v.fee)}</td>
+            <td><span class="status-pill status-done">${v.status}</span></td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      // Ensure default doctors exist
+      if (!localStorage.getItem("osmani_doctors")) {
+        setStore("osmani_doctors", DEFAULT_DOCTORS);
+      }
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>

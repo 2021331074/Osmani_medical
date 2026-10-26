@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769aa">
+  <title>Billing | Osmani Medical College Hospital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .billing-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:0 0 22px; }
+    .billing-summary .card { margin:0; }
+    .summary-label { color:var(--muted); font-size:13px; margin:0 0 8px; }
+    .summary-value { color:var(--ink); font-size:25px; font-weight:800; margin:0; }
+    .summary-value.due { color:#b45309; }
+    .summary-value.paid { color:#15803d; }
+    .patient-heading { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+    .patient-id { color:var(--muted); font-size:13px; }
+    .empty-state { padding:24px 16px; text-align:center; color:var(--muted); }
+    .notice { min-height:22px; margin:0 0 10px; font-size:14px; }
+    .notice.success { color:#15803d; }
+    .notice.error { color:#b91c1c; }
+    .muted-note { color:var(--muted); font-size:12px; margin-top:6px; }
+    @media (max-width:768px) {
+      .container, body { padding:20px !important; max-width:100% !important; }
+      .row, .grid, .two-col { flex-direction:column !important; grid-template-columns:1fr !important; }
+      h1 { font-size:22pt !important; }
+      table { font-size:11pt !important; }
+      .tenant-info, .info-box, .card { padding:16px !important; }
+      .billing-summary { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Osmani Hospital dashboard">
+      <span class="brand-icon" aria-hidden="true">✚</span>
+      <span class="brand-info"><h1>Osmani Medical College Hospital</h1><p>Hospital management demo</p></span>
+    </a>
+    <div class="topbar-right"><span class="badge-tag">Fictional demo</span></div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div>
+        <p class="nav-label">Main menu</p>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="index.html"><span class="icon" aria-hidden="true">▦</span>Dashboard</a>
+          <a href="patients.html"><span class="icon" aria-hidden="true">♙</span>Patients</a>
+          <a href="visits.html"><span class="icon" aria-hidden="true">✚</span>Doctor Visits</a>
+          <a href="lab.html"><span class="icon" aria-hidden="true">⚗</span>Lab Tests</a>
+          <a class="active" href="billing.html" aria-current="page"><span class="icon" aria-hidden="true">৳</span>Billing</a>
+          <a href="reports.html"><span class="icon" aria-hidden="true">▤</span>Reports</a>
+          <a href="chat.html"><span class="icon" aria-hidden="true">✦</span>AI Report Chat</a>
+        </nav>
+      </div>
+      <div class="sidebar-box"><h4>Demo data only</h4><p>Payments are stored in this browser and remain after refresh.</p></div>
+    </aside>
+
+    <main>
+      <p class="breadcrumb">Osmani / Finance</p>
+      <div class="page-header">
+        <div><h2>Billing & Payments</h2><p>Review charges, record payments, and see each patient's remaining balance.</p></div>
+        <span class="badge-tag">Amounts in Tk</span>
+      </div>
+
+      <section class="card" aria-labelledby="select-heading">
+        <div class="card-header"><div><h3 id="select-heading">Patient account</h3><p>Choose a patient to calculate visit charges, lab charges, payments, and due.</p></div></div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="patient-select">Patient</label>
+            <select id="patient-select"><option value="">Choose a patient</option></select>
+          </div>
+          <div class="form-group">
+            <label for="patient-search">Find patient</label>
+            <input id="patient-search" type="search" placeholder="Search by name or patient ID" autocomplete="off">
+          </div>
+        </div>
+        <p id="patient-meta" class="patient-id">Select a patient to view their account.</p>
+      </section>
+
+      <section class="billing-summary" aria-label="Selected patient balance">
+        <div class="card"><p class="summary-label">Total charges</p><p id="total-charges" class="summary-value">Tk 0</p></div>
+        <div class="card"><p class="summary-label">Total paid</p><p id="total-paid" class="summary-value paid">Tk 0</p></div>
+        <div class="card"><p class="summary-label">Balance due</p><p id="balance-due" class="summary-value due">Tk 0</p></div>
+      </section>
+
+      <section class="card" aria-labelledby="payment-heading">
+        <div class="card-header"><div><h3 id="payment-heading">Record a payment</h3><p>Add a payment to the selected patient's account.</p></div></div>
+        <p id="notice" class="notice" role="status" aria-live="polite"></p>
+        <form id="payment-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="payment-date">Payment date <span class="req">*</span></label>
+              <input id="payment-date" type="date" required>
+            </div>
+            <div class="form-group">
+              <label for="payment-amount">Amount (Tk) <span class="req">*</span></label>
+              <input id="payment-amount" type="number" min="0.01" step="0.01" required inputmode="decimal" placeholder="e.g. 500">
+            </div>
+            <div class="form-group">
+              <label for="payment-method">Payment method <span class="req">*</span></label>
+              <select id="payment-method" required>
+                <option value="">Choose method</option>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+                <option value="bKash">bKash</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="payment-note">Note (optional)</label>
+              <input id="payment-note" type="text" maxlength="120" placeholder="Receipt or reference note">
+            </div>
+          </div>
+          <p class="muted-note">A payment larger than the outstanding due is allowed and will show as a credit balance.</p>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Save payment</button>
+            <button class="btn btn-secondary" type="reset">Clear form</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="charges-heading">
+        <div class="card-header"><div><h3 id="charges-heading">Charges</h3><p>Visit and lab charges for the selected patient.</p></div></div>
+        <div class="table-wrapper" role="region" aria-label="Patient charges" tabindex="0">
+          <table>
+            <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody id="charges-body"></tbody>
+          </table>
+          <div id="charges-empty" class="empty-state">Select a patient to see charges.</div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="payments-heading">
+        <div class="card-header"><div><h3 id="payments-heading">Payment history</h3><p>Payments recorded for the selected patient.</p></div></div>
+        <div class="table-wrapper" role="region" aria-label="Payment history" tabindex="0">
+          <table>
+            <thead><tr><th>Date</th><th>Method</th><th>Reference / Note</th><th>Amount</th></tr></thead>
+            <tbody id="payments-body"></tbody>
+          </table>
+          <div id="payments-empty" class="empty-state">Select a patient to see payments.</div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="all-balances-heading">
+        <div class="card-header"><div><h3 id="all-balances-heading">Patient balances</h3><p>Quick view of each patient's total, paid, and due amounts.</p></div><span id="balance-count" class="record-count"></span></div>
+        <div class="table-wrapper" role="region" aria-label="All patient balances" tabindex="0">
+          <table>
+            <thead><tr><th>Patient ID</th><th>Patient</th><th>Total</th><th>Paid</th><th>Due</th></tr></thead>
+            <tbody id="balances-body"></tbody>
+          </table>
+          <div id="balances-empty" class="empty-state" hidden>No patients are registered yet. Add a patient first.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const api = window.Osmani;
+      const $ = id => document.getElementById(id);
+      const patientSelect = $('patient-select');
+      const search = $('patient-search');
+      const form = $('payment-form');
+      let patientsCache = [];
+
+      function readFromStorage(keys) {
+        for (const key of keys) {
+          try {
+            const value = JSON.parse(localStorage.getItem(key));
+            if (Array.isArray(value)) return value;
+          } catch (_) {}
+        }
+        return [];
+      }
+      function getPatients() { return api?.getPatients?.() || readFromStorage(['osmani_patients','patients']); }
+      function getVisits() { return api?.getVisits?.() || readFromStorage(['osmani_visits','visits']); }
+      function getTests() {
+        return api?.getLabTests?.() || api?.getTests?.() || readFromStorage(['osmani_lab_tests','osmani_tests','lab_tests','tests']);
+      }
+      function getPayments() { return api?.getPayments?.() || readFromStorage(['osmani_payments','payments']); }
+      function idFor(prefix, list) {
+        const max = list.reduce((n, item) => {
+          const digits = String(item.id || '').match(/(\d+)$/);
+          return digits ? Math.max(n, Number(digits[1])) : n;
+        }, 0);
+        return prefix + String(max + 1).padStart(5, '0');
+      }
+      function savePayment(record) {
+        if (api?.savePayment) return api.savePayment(record);
+        const list = getPayments();
+        const saved = { ...record, id: record.id || idFor('PAY-', list) };
+        list.push(saved);
+        localStorage.setItem('osmani_payments', JSON.stringify(list));
+        return saved;
+      }
+      function amount(value) { return Number(value) || 0; }
+      function money(value) { return 'Tk ' + amount(value).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+      function localToday() {
+        const now = new Date();
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,10);
+      }
+      function displayDate(value) { return escapeHtml(String(value || '—').slice(0,10)); }
+      function patientName(patient) { return patient?.name || 'Unknown patient'; }
+      function chargesFor(patientId) {
+        const visits = getVisits().filter(v => v.patientId === patientId).map(v => ({
+          date: v.date, type: 'Doctor visit', description: v.doctorName || v.doctorId ? `Consultation — ${v.doctorName || v.doctorId}` : (v.problem || 'Consultation'), amount: amount(v.fee)
+        }));
+        const tests = getTests().filter(t => t.patientId === patientId).map(t => ({
+          date: t.date, type: 'Lab test', description: t.testName || t.name || t.test || 'Laboratory test', amount: amount(t.price ?? t.fee ?? t.amount)
+        }));
+        return visits.concat(tests).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+      }
+      function paymentsFor(patientId) { return getPayments().filter(p => p.patientId === patientId); }
+      function totals(patientId) {
+        const charges = chargesFor(patientId).reduce((sum, x) => sum + x.amount, 0);
+        const paid = paymentsFor(patientId).reduce((sum, x) => sum + amount(x.amount), 0);
+        return { charges, paid, due: charges - paid };
+      }
+      function visiblePatients() {
+        const query = search.value.trim().toLowerCase();
+        return patientsCache.filter(p => !query || `${p.id} ${p.name} ${p.phone || ''}`.toLowerCase().includes(query));
+      }
+      function populatePatients(keepSelection = true) {
+        patientsCache = getPatients().slice().sort((a,b) => String(a.name).localeCompare(String(b.name)));
+        const previous = keepSelection ? patientSelect.value : '';
+        const list = visiblePatients();
+        patientSelect.innerHTML = '<option value="">Choose a patient</option>' + list.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.id)} — ${escapeHtml(patientName(p))}</option>`).join('');
+        if (list.some(p => p.id === previous)) patientSelect.value = previous;
+        renderSelected();
+        renderBalances();
+      }
+      function renderSelected() {
+        const id = patientSelect.value;
+        const patient = patientsCache.find(p => p.id === id);
+        const chargeList = $('charges-body');
+        const paymentList = $('payments-body');
+        if (!patient) {
+          $('patient-meta').textContent = 'Select a patient to view their account.';
+          $('total-charges').textContent = money(0);
+          $('total-paid').textContent = money(0);
+          $('balance-due').textContent = money(0);
+          chargeList.innerHTML = '';
+          paymentList.innerHTML = '';
+          $('charges-empty').hidden = false;
+          $('charges-empty').textContent = 'Select a patient to see charges.';
+          $('payments-empty').hidden = false;
+          $('payments-empty').textContent = 'Select a patient to see payments.';
+          return;
+        }
+        $('patient-meta').textContent = `${patient.id} · ${patientName(patient)}${patient.phone ? ' · ' + patient.phone : ''}`;
+        const summary = totals(id);
+        $('total-charges').textContent = money(summary.charges);
+        $('total-paid').textContent = money(summary.paid);
+        $('balance-due').textContent = money(summary.due);
+        const charges = chargesFor(id);
+        chargeList.innerHTML = charges.map(c => `<tr><td>${displayDate(c.date)}</td><td>${escapeHtml(c.type)}</td><td>${escapeHtml(c.description)}</td><td>${money(c.amount)}</td></tr>`).join('');
+        $('charges-empty').hidden = charges.length > 0;
+        $('charges-empty').textContent = charges.length ? '' : 'No visit or lab charges have been recorded for this patient.';
+        const payments = paymentsFor(id).slice().sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+        paymentList.innerHTML = payments.map(p => `<tr><td>${displayDate(p.date)}</td><td>${escapeHtml(p.method || '—')}</td><td>${escapeHtml(p.note || p.reference || p.source || '—')}</td><td>${money(p.amount)}</td></tr>`).join('');
+        $('payments-empty').hidden = payments.length > 0;
+        $('payments-empty').textContent = payments.length ? '' : 'No payments have been recorded for this patient.';
+      }
+      function renderBalances() {
+        const patients = patientsCache;
+        $('balance-count').textContent = `${patients.length} ${patients.length === 1 ? 'patient' : 'patients'}`;
+        $('balances-body').innerHTML = patients.map(p => {
+          const t = totals(p.id);
+          return `<tr><td>${escapeHtml(p.id)}</td><td>${escapeHtml(patientName(p))}</td><td>${money(t.charges)}</td><td>${money(t.paid)}</td><td>${money(t.due)}</td></tr>`;
+        }).join('');
+        $('balances-empty').hidden = patients.length > 0;
+      }
+      function notify(message, type = '') {
+        $('notice').textContent = message;
+        $('notice').className = 'notice' + (type ? ' ' + type : '');
+      }
+
+      $('payment-date').value = localToday();
+      try { populatePatients(false); }
+      catch (error) { notify('Could not load local data. Check data.js and try refreshing.', 'error'); }
+      patientSelect.addEventListener('change', renderSelected);
+      search.addEventListener('input', () => populatePatients(true));
+      form.addEventListener('reset', () => setTimeout(() => { $('payment-date').value = localToday(); notify(''); }, 0));
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const patient = patientsCache.find(p => p.id === patientSelect.value);
+        if (!patient) return notify('Choose a patient before recording a payment.', 'error');
+        const paymentAmount = Number($('payment-amount').value);
+        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) return notify('Enter a payment amount greater than zero.', 'error');
+        const method = $('payment-method').value;
+        if (!['Cash','Card','bKash'].includes(method)) return notify('Choose Cash, Card, or bKash.', 'error');
+        const record = {
+          patientId: patient.id,
+          patientName: patient.name,
+          date: $('payment-date').value,
+          amount: paymentAmount,
+          method,
+          note: $('payment-note').value.trim(),
+          source: 'Billing'
+        };
+        try {
+          const saved = savePayment(record);
+          if (!saved) throw new Error('Payment was not saved.');
+          form.reset();
+          $('payment-date').value = localToday();
+          renderSelected();
+          renderBalances();
+          notify(`Payment of ${money(paymentAmount)} saved for ${patient.name}. Refresh to confirm it persists.`, 'success');
+        } catch (error) {
+          notify(error.message || 'Could not save payment. Check browser storage permissions.', 'error');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

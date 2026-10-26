@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769aa">
+  <title>Doctor Visits | Osmani Medical College Hospital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .visit-meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .visit-id { color:var(--muted); font-size:12px; font-weight:700; }
+    .empty-state { padding:28px 18px; text-align:center; color:var(--muted); }
+    .empty-state strong { display:block; color:var(--ink); margin-bottom:5px; }
+    .record-count { color:var(--muted); font-size:12px; }
+    .fee-hint { color:var(--muted); font-size:12px; }
+    @media (max-width:768px) {
+      .container, body { padding:20px !important; max-width:100% !important; }
+      .row, .grid, .two-col { flex-direction:column !important; grid-template-columns:1fr !important; }
+      h1 { font-size:22pt !important; }
+      table { font-size:11pt !important; }
+      .tenant-info, .info-box, .card { padding:16px !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Osmani dashboard">
+      <span class="brand-icon" aria-hidden="true">✚</span>
+      <span class="brand-info"><h1>Osmani Medical College Hospital</h1><p>Hospital management demo</p></span>
+    </a>
+    <div class="topbar-right"><span class="badge-tag">Fictional demo</span></div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div>
+        <p class="nav-label">Main menu</p>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="index.html"><span class="icon" aria-hidden="true">▦</span>Dashboard</a>
+          <a href="patients.html"><span class="icon" aria-hidden="true">♙</span>Patients</a>
+          <a class="active" href="visits.html" aria-current="page"><span class="icon" aria-hidden="true">✚</span>Doctor Visits</a>
+          <a href="lab.html"><span class="icon" aria-hidden="true">⚗</span>Lab Tests</a>
+          <a href="billing.html"><span class="icon" aria-hidden="true">৳</span>Billing</a>
+          <a href="reports.html"><span class="icon" aria-hidden="true">▤</span>Reports</a>
+          <a href="chat.html"><span class="icon" aria-hidden="true">✦</span>AI Report Chat</a>
+        </nav>
+      </div>
+      <div class="sidebar-box"><h4>Demo data only</h4><p>Use fictional records for practice. Visit entries are saved in this browser.</p></div>
+    </aside>
+
+    <main>
+      <p class="breadcrumb">Osmani / Clinical records</p>
+      <div class="page-header">
+        <div><h2>Doctor Visits</h2><p>Record a consultation, the reported problem, prescription, and visit fee.</p></div>
+        <div class="visit-meta"><span class="badge-tag">Visits saved locally</span></div>
+      </div>
+
+      <section class="card" aria-labelledby="form-heading">
+        <div class="card-header"><div><h3 id="form-heading">Add a doctor visit</h3><p>Choose a registered patient and one of the demo doctors.</p></div></div>
+        <div id="notice" class="toast" role="status" aria-live="polite"></div>
+        <form id="visit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="patient">Patient <span class="req">*</span></label>
+              <select id="patient" name="patientId" required>
+                <option value="">Choose a patient</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="doctor">Doctor <span class="req">*</span></label>
+              <select id="doctor" name="doctorId" required>
+                <option value="">Choose a doctor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="visit-date">Visit date <span class="req">*</span></label>
+              <input id="visit-date" name="date" type="date" required>
+            </div>
+            <div class="form-group">
+              <label for="fee">Visit fee (Tk) <span class="req">*</span></label>
+              <input id="fee" name="fee" type="number" min="0" step="1" required inputmode="decimal">
+              <span id="fee-hint" class="fee-hint">Selecting a doctor fills their demo fee; you can adjust it.</span>
+            </div>
+            <div class="form-group full">
+              <label for="problem">Problem / notes <span class="req">*</span></label>
+              <textarea id="problem" name="problem" required maxlength="1000" placeholder="Describe the reason for the visit"></textarea>
+            </div>
+            <div class="form-group full">
+              <label for="medicines">Medicines / prescription</label>
+              <textarea id="medicines" name="medicines" maxlength="1500" placeholder="Enter prescription details, if any"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Save visit</button>
+            <button class="btn btn-secondary" type="reset">Clear form</button>
+            <span class="record-count">Required fields are marked with <span class="req">*</span>.</span>
+          </div>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="list-heading">
+        <div class="card-header">
+          <div><h3 id="list-heading">Visit records</h3><p>Newest visits appear first.</p></div>
+          <span id="visit-count" class="record-count">0 visits</span>
+        </div>
+        <div class="filter-bar">
+          <label for="search-visits" class="sr-only">Search visits</label>
+          <input id="search-visits" class="search-input" type="search" placeholder="Search patient, doctor, problem, or visit ID…">
+        </div>
+        <div class="table-wrapper" role="region" aria-label="Visit records table" tabindex="0">
+          <table>
+            <thead><tr><th>Visit ID</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Problem</th><th>Medicines</th><th>Fee</th></tr></thead>
+            <tbody id="visits-body"></tbody>
+          </table>
+          <div id="empty-state" class="empty-state" hidden><strong>No visits found</strong><span>Add a visit above or change your search.</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const api = window.Osmani;
+      const form = document.getElementById('visit-form');
+      const patientSelect = document.getElementById('patient');
+      const doctorSelect = document.getElementById('doctor');
+      const feeInput = document.getElementById('fee');
+      const dateInput = document.getElementById('visit-date');
+      const searchInput = document.getElementById('search-visits');
+      const tbody = document.getElementById('visits-body');
+      const emptyState = document.getElementById('empty-state');
+      const notice = document.getElementById('notice');
+      const count = document.getElementById('visit-count');
+      let noticeTimer;
+
+      function localDateString() {
+        const now = new Date();
+        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 10);
+      }
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      }
+      function say(message, type) {
+        clearTimeout(noticeTimer);
+        notice.textContent = message;
+        notice.className = 'toast ' + (type || '');
+        noticeTimer = setTimeout(() => { notice.textContent = ''; notice.className = 'toast'; }, 4500);
+      }
+      function fillOptions() {
+        if (!api) throw new Error('data.js did not load. Check that it is beside visits.html.');
+        const patients = api.getPatients();
+        const doctors = api.getDoctors();
+        patientSelect.innerHTML = '<option value="">Choose a patient</option>' + patients
+          .slice().sort((a,b) => String(a.name).localeCompare(String(b.name)))
+          .map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.id)} — ${escapeHtml(p.name)}</option>`).join('');
+        doctorSelect.innerHTML = '<option value="">Choose a doctor</option>' + doctors
+          .map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)} — ${escapeHtml(d.dept)}</option>`).join('');
+      }
+      function money(value) {
+        return 'Tk ' + (Number(value) || 0).toLocaleString('en-US');
+      }
+      function renderVisits() {
+        const query = searchInput.value.trim().toLowerCase();
+        const patientsById = new Map(api.getPatients().map(p => [p.id, p]));
+        const doctorsById = new Map(api.getDoctors().map(d => [d.id, d]));
+        const visits = api.getVisits().slice().sort((a,b) => String(b.date).localeCompare(String(a.date)) || String(b.id).localeCompare(String(a.id)));
+        const filtered = visits.filter(v => {
+          const patient = patientsById.get(v.patientId);
+          const doctor = doctorsById.get(v.doctorId);
+          const haystack = [v.id, v.patientName, patient?.name, v.patientId, v.doctorName, doctor?.name, v.problem, v.medicines, v.date].join(' ').toLowerCase();
+          return haystack.includes(query);
+        });
+        count.textContent = `${filtered.length} ${filtered.length === 1 ? 'visit' : 'visits'}`;
+        tbody.innerHTML = filtered.map(v => {
+          const patient = patientsById.get(v.patientId);
+          const doctor = doctorsById.get(v.doctorId);
+          return `<tr>
+            <td>${escapeHtml(v.id)}</td>
+            <td>${escapeHtml(v.date)}</td>
+            <td>${escapeHtml(patient?.name || v.patientName || v.patientId || 'Unknown')}</td>
+            <td>${escapeHtml(doctor?.name || v.doctorName || v.doctorId || 'Unknown')}</td>
+            <td>${escapeHtml(v.problem || '—')}</td>
+            <td>${escapeHtml(v.medicines || '—')}</td>
+            <td>${money(v.fee)}</td>
+          </tr>`;
+        }).join('');
+        emptyState.hidden = filtered.length > 0;
+      }
+
+      try {
+        fillOptions();
+        renderVisits();
+      } catch (error) {
+        say(error.message || 'Could not load the visit screen.', 'error');
+      }
+      dateInput.value = localDateString();
+      doctorSelect.addEventListener('change', () => {
+        const doctor = api.getDoctors().find(d => d.id === doctorSelect.value);
+        if (doctor) feeInput.value = Number(doctor.fee) || 0;
+      });
+      searchInput.addEventListener('input', renderVisits);
+      form.addEventListener('reset', () => {
+        setTimeout(() => { dateInput.value = localDateString(); }, 0);
+      });
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!api) return say('Data API unavailable. Check that data.js is in the project folder.', 'error');
+        const patient = api.getPatients().find(p => p.id === patientSelect.value);
+        const doctor = api.getDoctors().find(d => d.id === doctorSelect.value);
+        if (!patient || !doctor) return say('Choose a valid patient and doctor.', 'error');
+        const fee = Number(feeInput.value);
+        if (!Number.isFinite(fee) || fee < 0) return say('Enter a valid fee of zero or more.', 'error');
+        const record = {
+          patientId: patient.id,
+          patientName: patient.name,
+          doctorId: doctor.id,
+          doctorName: doctor.name,
+          department: doctor.dept,
+          date: dateInput.value,
+          problem: document.getElementById('problem').value.trim(),
+          medicines: document.getElementById('medicines').value.trim(),
+          fee
+        };
+        try {
+          const saved = api.saveVisit(record);
+          if (!saved || !saved.id) throw new Error('The visit could not be saved. Check browser storage permissions.');
+          form.reset();
+          fillOptions();
+          renderVisits();
+          say(`Visit ${saved.id} saved. It will remain after refresh in this browser.`, 'success');
+          document.getElementById('patient').focus();
+        } catch (error) {
+          say(error.message || 'Could not save visit.', 'error');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

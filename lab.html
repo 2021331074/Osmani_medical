@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769aa">
+  <title>Lab Tests | Osmani Medical College Hospital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .status-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#fff4d6;color:#865d00}
+    .status-pill.done{background:#e3f5eb;color:#176b3a}.empty-state{padding:28px 18px;text-align:center;color:var(--muted)}
+    .empty-state strong{display:block;color:var(--ink);margin-bottom:5px}.record-count,.hint{color:var(--muted);font-size:12px}
+    .action-cell{display:flex;gap:6px;flex-wrap:wrap}.action-cell button{font:inherit;cursor:pointer}
+    .notice{min-height:20px;margin:0 0 10px;font-size:14px}.notice.error{color:#a12626}.notice.success{color:#176b3a}
+    @media(max-width:768px){.container,body{padding:20px!important;max-width:100%!important}.row,.grid,.two-col{flex-direction:column!important;grid-template-columns:1fr!important}h1{font-size:22pt!important}table{font-size:11pt!important}.tenant-info,.info-box,.card{padding:16px!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="index.html" aria-label="Osmani dashboard"><span class="brand-icon" aria-hidden="true">✚</span><span class="brand-info"><h1>Osmani Medical College Hospital</h1><p>Hospital management demo</p></span></a><div class="topbar-right"><span class="badge-tag">Fictional demo</span></div></header>
+  <div class="layout">
+    <aside class="sidebar"><div><p class="nav-label">Main menu</p><nav class="nav" aria-label="Main navigation">
+      <a href="index.html"><span class="icon" aria-hidden="true">▦</span>Dashboard</a><a href="patients.html"><span class="icon" aria-hidden="true">♙</span>Patients</a><a href="visits.html"><span class="icon" aria-hidden="true">✚</span>Doctor Visits</a><a class="active" href="lab.html" aria-current="page"><span class="icon" aria-hidden="true">⚗</span>Lab Tests</a><a href="billing.html"><span class="icon" aria-hidden="true">৳</span>Billing</a><a href="reports.html"><span class="icon" aria-hidden="true">▤</span>Reports</a><a href="chat.html"><span class="icon" aria-hidden="true">✦</span>AI Report Chat</a>
+    </nav></div><div class="sidebar-box"><h4>Demo data only</h4><p>Lab records are saved in this browser. Use fictional records only.</p></div></aside>
+    <main><p class="breadcrumb">Osmani / Clinical records</p><div class="page-header"><div><h2>Lab Tests</h2><p>Order a test, track its status, and record the result.</p></div><span class="badge-tag">Saved locally</span></div>
+      <section class="card"><div class="card-header"><div><h3>Order a lab test</h3><p>Choose a registered patient and a test from the demo price list.</p></div></div><p id="notice" class="notice" role="status" aria-live="polite"></p>
+        <form id="lab-form"><div class="form-grid">
+          <div class="form-group"><label for="patient">Patient <span class="req">*</span></label><select id="patient" required><option value="">Choose a patient</option></select></div>
+          <div class="form-group"><label for="test">Test <span class="req">*</span></label><select id="test" required><option value="">Choose a test</option></select></div>
+          <div class="form-group"><label for="date">Order date <span class="req">*</span></label><input id="date" type="date" required></div>
+          <div class="form-group"><label for="price">Price (Tk) <span class="req">*</span></label><input id="price" type="number" min="0" step="1" required inputmode="decimal"><span class="hint">Price fills from the test list; you can adjust it.</span></div>
+          <div class="form-group"><label for="status">Status</label><select id="status"><option value="Pending">Pending</option><option value="Done">Done</option></select></div>
+          <div class="form-group full"><label for="result">Result / findings</label><textarea id="result" maxlength="1500" placeholder="Enter findings when available"></textarea></div>
+        </div><div class="form-actions"><button class="btn btn-primary" type="submit">Save lab test</button><button class="btn btn-secondary" type="reset">Clear form</button></div></form>
+      </section>
+      <section class="card"><div class="card-header"><div><h3>Lab test records</h3><p>Use the action button to mark a pending test as done.</p></div><span id="count" class="record-count">0 tests</span></div><div class="filter-bar"><label class="sr-only" for="search">Search lab tests</label><input id="search" class="search-input" type="search" placeholder="Search patient, test, status, or ID…"></div>
+        <div class="table-wrapper" role="region" aria-label="Lab test records" tabindex="0"><table><thead><tr><th>Test ID</th><th>Date</th><th>Patient</th><th>Test</th><th>Status</th><th>Result</th><th>Price</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty-state" hidden><strong>No lab tests found</strong><span>Add a test above or adjust your search.</span></div></div>
+      </section>
+    </main>
+  </div>
+  <script src="data.js"></script>
+  <script>
+  (()=>{'use strict';
+    const api=window.Osmani, KEY='osmani_lab_tests';
+    const $=id=>document.getElementById(id), form=$('lab-form'), notice=$('notice');
+    const catalog=[{name:'Complete Blood Count (CBC)',category:'Hematology',price:800},{name:'Blood Glucose',category:'Biochemistry',price:350},{name:'Lipid Profile',category:'Biochemistry',price:1200},{name:'Urine R/E',category:'Pathology',price:400},{name:'Chest X-Ray',category:'Radiology',price:900},{name:'Liver Function Test',category:'Biochemistry',price:1500}];
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function read(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return []}}
+    function getPatients(){return api?.getPatients?.()||read('osmani_patients')}
+    function getTests(){return api?.getLabTests?.()||read(KEY)}
+    function saveTest(record){if(api?.saveLabTest)return api.saveLabTest(record);const all=read(KEY);const item={...record,id:record.id||`LT-${String(Date.now()).slice(-8)}`};all.push(item);localStorage.setItem(KEY,JSON.stringify(all));return item}
+    function replaceTests(list){if(api?.setLabTests){api.setLabTests(list);return}localStorage.setItem(KEY,JSON.stringify(list))}
+    function localToday(){const d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+    function say(text,type=''){notice.textContent=text;notice.className='notice '+type;window.clearTimeout(say.timer);say.timer=setTimeout(()=>{notice.textContent='';notice.className='notice'},4500)}
+    function loadOptions(){const patients=getPatients();$('patient').innerHTML='<option value="">Choose a patient</option>'+patients.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(p=>`<option value="${esc(p.id)}">${esc(p.id)} — ${esc(p.name)}</option>`).join('');$('test').innerHTML='<option value="">Choose a test</option>'+catalog.map((t,i)=>`<option value="${i}">${esc(t.name)} — Tk ${t.price.toLocaleString('en-US')}</option>`).join('')}
+    function render(){const patients=new Map(getPatients().map(p=>[p.id,p]));const q=$('search').value.trim().toLowerCase();const list=getTests().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));const filtered=list.filter(t=>[t.id,t.date,t.testName,t.name,t.status,t.result,t.patientId,patients.get(t.patientId)?.name].join(' ').toLowerCase().includes(q));$('count').textContent=`${filtered.length} ${filtered.length===1?'test':'tests'}`;$('rows').innerHTML=filtered.map(t=>{const status=String(t.status||'Pending');return `<tr><td>${esc(t.id)}</td><td>${esc(t.date)}</td><td>${esc(patients.get(t.patientId)?.name||t.patientName||t.patientId||'Unknown')}</td><td>${esc(t.testName||t.name)}</td><td><span class="status-pill ${status==='Done'?'done':''}">${esc(status)}</span></td><td>${esc(t.result||'—')}</td><td>Tk ${(Number(t.price)||0).toLocaleString('en-US')}</td><td class="action-cell">${status==='Pending'?`<button class="btn btn-secondary" type="button" data-done="${esc(t.id)}">Mark done</button>`:'—'}</td></tr>`}).join('');$('empty').hidden=filtered.length>0}
+    try{loadOptions();render()}catch(e){say('Could not load data. Check that data.js and the other files are in the same folder.','error')}
+    $('test').addEventListener('change',()=>{const t=catalog[Number($('test').value)];if(t)$('price').value=t.price});$('search').addEventListener('input',render);$('date').value=localToday();
+    form.addEventListener('reset',()=>setTimeout(()=>{$('date').value=localToday()},0));
+    form.addEventListener('submit',e=>{e.preventDefault();const patient=getPatients().find(p=>p.id===$('patient').value);const t=catalog[Number($('test').value)];const price=Number($('price').value);if(!patient||!t)return say('Select a valid patient and test.','error');if(!Number.isFinite(price)||price<0)return say('Enter a valid price.','error');try{const saved=saveTest({patientId:patient.id,patientName:patient.name,testName:t.name,category:t.category,date:$('date').value,price,status:$('status').value,result:$('result').value.trim()});if(!saved)throw Error('Save failed');form.reset();loadOptions();render();say(`Lab test ${saved.id||''} saved. It will remain after refresh in this browser.`,'success')}catch(err){say(err.message||'Could not save the test.','error')}});
+    $('rows').addEventListener('click',e=>{const btn=e.target.closest('[data-done]');if(!btn)return;try{const updated=getTests().map(t=>String(t.id)===btn.dataset.done?{...t,status:'Done'}:t);replaceTests(updated);render();say('Test marked as done.','success')}catch{say('Could not update the test status.','error')}});
+  })();
+  </script>
+</body>
+</html>
